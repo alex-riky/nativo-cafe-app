@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Nativo Café</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        .email-verification-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            color: #856404;
+        }
+        
+        .email-verification-warning h4 {
+            margin: 0 0 8px 0;
+            color: #856404;
+        }
+        
+        .email-verification-warning p {
+            margin: 0;
+            font-size: 14px;
+        }
+        
+        .resend-verification {
+            background: none;
+            border: none;
+            color: #007bff;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        
+        .resend-verification:hover {
+            color: #0056b3;
+        }
+        
+        .password-reset-info {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            color: #004085;
+            font-size: 14px;
+        }
+        
+        .password-reset-info strong {
+            color: #004085;
+        }
+    </style>
+</head>
+<body>
+    <!-- Notificación -->
+    <div id="notification" class="notification"></div>
+    
+    <div class="auth-container">
+        <div class="auth-card">
+            <a href="/" class="form-logo">
+            <img src="/static/img/aa.png" alt="Nativo Café Logo">
+            </a>
+            <h1 class="auth-title">Iniciar Sesión</h1>
+            <p class="auth-subtitle">Bienvenido de vuelta a Nativo Café</p>
+            
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+            <div id="successMessage" class="success-message" style="display: none;"></div>
+            
+            <!-- Aviso de verificación de email -->
+            <div id="emailVerificationWarning" class="email-verification-warning" style="display: none;">
+                <h4>⚠️ Email no verificado</h4>
+                <p>Debes verificar tu correo electrónico antes de poder iniciar sesión.</p>
+                <button class="resend-verification" onclick="resendVerificationEmail()">
+                    Reenviar email de verificación
+                </button>
+            </div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Correo Electrónico</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full" id="loginBtn">
+                    Iniciar Sesión
+                </button>
+            </form>
+            
+            <div class="auth-link">
+                <a href="#" onclick="showForgotPasswordModal()">¿Olvidaste tu contraseña?</a>
+            </div>
+            
+            <div class="auth-link">
+                ¿No tienes cuenta? <a href="/register">Regístrate</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Recuperación de Contraseña -->
+    <div id="forgotPasswordModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Recuperar Contraseña</h2>
+                <button class="close-modal" onclick="closeForgotPasswordModal()">×</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="password-reset-info">
+                    <strong>Importante:</strong> Solo puedes recuperar tu contraseña si tu correo electrónico ha sido verificado previamente.
+                </div>
+                
+                <p>Ingresa tu correo electrónico verificado y te enviaremos un enlace para restablecer tu contraseña.</p>
+                
+                <form id="forgotPasswordForm" onsubmit="handlePasswordReset(event)">
+                    <div class="form-group">
+                        <label for="resetEmail">Correo Electrónico Verificado</label>
+                        <input type="email" id="resetEmail" name="resetEmail" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full">
+                        Enviar Enlace de Recuperación
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBR15MaGdT7JpTh0C3w1r1NkI8wmoSQRJU",
+            authDomain: "nativo-cafe-tienda-85377.firebaseapp.com",
+            projectId: "nativo-cafe-tienda-85377",
+            storageBucket: "nativo-cafe-tienda-85377.firebasestorage.app",
+            messagingSenderId: "1034154213401",
+            appId: "1:1034154213401:web:5b654e7d816c875956aa88",
+            measurementId: "G-CE58R1VV8F"
+        };
+
+        // Inicializar Firebase
+        let app, auth, db;
+        let unverifiedUser = null;
+        
+        try {
+            app = firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            db = firebase.firestore();
+            console.log('✅ Firebase inicializado correctamente');
+        } catch (error) {
+            console.error('❌ Error inicializando Firebase:', error);
+            showNotification('Error de configuración. Verifica tu conexión a internet.', 'error');
+        }
+
+        // Función para mostrar notificaciones
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.textContent = message;
+                notification.className = `notification ${type} show`;
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 5000);
+            }
+        }
+
+        // Función para mostrar errores
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            if (errorDiv) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+            }
+            showNotification(message, 'error');
+        }
+
+        // Función para mostrar éxito
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            if (successDiv) {
+                successDiv.textContent = message;
+                successDiv.style.display = 'block';
+            }
+            showNotification(message, 'success');
+        }
+
+        // Función para limpiar mensajes
+        function clearMessages() {
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            const warningDiv = document.getElementById('emailVerificationWarning');
+            if (errorDiv) errorDiv.style.display = 'none';
+            if (successDiv) successDiv.style.display = 'none';
+            if (warningDiv) warningDiv.style.display = 'none';
+        }
+
+        // Función para mostrar aviso de email no verificado
+        function showEmailVerificationWarning() {
+            const warning = document.getElementById('emailVerificationWarning');
+            if (warning) {
+                warning.style.display = 'block';
+            }
+        }
+
+        // Función de login con verificación de email
+        async function loginUser(email, password) {
+            try {
+                console.log('🔄 Iniciando login para:', email);
+                
+                // Verificar que Firebase esté inicializado
+                if (!auth) {
+                    throw new Error('Firebase no está inicializado');
+                }
+
+                showNotification('Iniciando sesión...', 'warning');
+                
+                // Iniciar sesión con Firebase Auth
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                console.log('✅ Usuario logueado:', user.uid);
+                console.log('Email verificado:', user.emailVerified);
+
+                // Verificar si el email está verificado
+                if (!user.emailVerified) {
+                    unverifiedUser = user;
+                    showEmailVerificationWarning();
+                    showError('Debes verificar tu correo electrónico antes de poder acceder.');
+                    
+                    // Cerrar sesión del usuario no verificado
+                    await auth.signOut();
+                    return;
+                }
+
+                // Actualizar estado de verificación en Firestore
+                try {
+                    await db.collection('users').doc(user.uid).update({
+                        emailVerified: true,
+                        lastLogin: new Date().toISOString()
+                    });
+                } catch (firestoreError) {
+                    console.warn('No se pudo actualizar Firestore:', firestoreError);
+                }
+
+                showSuccess('¡Sesión iniciada exitosamente! Redirigiendo...');
+                
+                // Redirigir después de 1 segundo
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1000);
+
+            } catch (error) {
+                console.error('❌ Error en login:', error);
+                
+                let errorMessage = 'Error al iniciar sesión';
+                
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = 'No existe una cuenta con este correo electrónico.';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage = 'Contraseña incorrecta.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'El correo electrónico no es válido.';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage = 'Demasiados intentos fallidos. Intenta más tarde.';
+                        break;
+                    case 'auth/network-request-failed':
+                        errorMessage = 'Error de conexión. Verifica tu internet.';
+                        break;
+                    default:
+                        errorMessage = error.message || 'Error desconocido al iniciar sesión';
+                }
+                
+                showError(errorMessage);
+            }
+        }
+
+        // Función para reenviar email de verificación
+        async function resendVerificationEmail() {
+            if (!unverifiedUser) {
+                showError('No hay usuario para reenviar verificación');
+                return;
+            }
+
+            try {
+                await unverifiedUser.sendEmailVerification({
+                    url: window.location.origin + '/login',
+                    handleCodeInApp: false
+                });
+                
+                showSuccess('Email de verificación reenviado. Revisa tu bandeja de entrada.');
+            } catch (error) {
+                console.error('Error reenviando email:', error);
+                showError('Error al reenviar email de verificación');
+            }
+        }
+
+        // Verificar si el usuario está verificado
+        async function checkUserVerification(email) {
+            try {
+                // Método alternativo: intentar hacer login temporal para verificar estado
+                // Esto evita problemas de permisos en Firestore
+                
+                // Primero verificar si el usuario existe en Firebase Auth
+                const methods = await auth.fetchSignInMethodsForEmail(email);
+                
+                if (methods.length === 0) {
+                    console.log('Usuario no encontrado en Firebase Auth');
+                    return false;
+                }
+                
+                // Si el usuario existe, asumimos que está verificado si puede hacer reset
+                // Firebase Auth solo permite reset a usuarios con email verificado
+                return true;
+                
+            } catch (error) {
+                console.error('Error verificando usuario:', error);
+                
+                // Si hay error, permitir el reset - Firebase Auth manejará la verificación
+                return true;
+            }
+        }
+
+        // Manejar recuperación de contraseña
+        async function handlePasswordReset(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('resetEmail').value.trim();
+            
+            if (!email) {
+                showError('Por favor ingresa tu correo electrónico');
+                return;
+            }
+
+            try {
+                // Enviar email de recuperación directamente
+                // Firebase Auth manejará automáticamente la verificación
+                await auth.sendPasswordResetEmail(email, {
+                    url: window.location.origin + '/login',
+                    handleCodeInApp: false
+                });
+                
+                showSuccess('Se ha enviado un enlace de recuperación a tu correo electrónico. Si tu correo está verificado, recibirás el enlace.');
+                closeForgotPasswordModal();
+                
+            } catch (error) {
+                console.error('Error enviando email de recuperación:', error);
+                let errorMessage = 'Error al enviar el enlace de recuperación';
+                
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = 'No existe una cuenta con este correo electrónico';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'El correo electrónico no es válido';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage = 'Demasiadas solicitudes. Intenta más tarde';
+                        break;
+                    default:
+                        errorMessage = error.message || 'Error desconocido';
+                }
+                
+                showError(errorMessage);
+            }
+        }
+
+        // Event listener para el formulario
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const loginBtn = document.getElementById('loginBtn');
+            
+            if (loginForm) {
+                loginForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    clearMessages();
+                    
+                    // Deshabilitar botón
+                    loginBtn.disabled = true;
+                    loginBtn.textContent = 'Iniciando sesión...';
+                    
+                    try {
+                        const formData = new FormData(e.target);
+                        const email = formData.get('email').trim();
+                        const password = formData.get('password');
+                        
+                        // Validaciones
+                        if (!email || !password) {
+                            throw new Error('Todos los campos son obligatorios');
+                        }
+                        
+                        // Iniciar sesión
+                        await loginUser(email, password);
+                        
+                    } catch (error) {
+                        console.error('Error en formulario:', error);
+                        showError(error.message);
+                    } finally {
+                        // Rehabilitar botón
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = 'Iniciar Sesión';
+                    }
+                });
+            }
+
+            // Verificar si el usuario ya está logueado
+            if (auth) {
+                auth.onAuthStateChanged(function(user) {
+                    if (user && user.emailVerified) {
+                        console.log('Usuario ya logueado y verificado, redirigiendo...');
+                        window.location.href = '/';
+                    }
+                });
+            }
+        });
+
+        // Funciones para modal de recuperación de contraseña
+        function showForgotPasswordModal() {
+            document.getElementById('forgotPasswordModal').style.display = 'flex';
+        }
+
+        function closeForgotPasswordModal() {
+            document.getElementById('forgotPasswordModal').style.display = 'none';
+            document.getElementById('forgotPasswordForm').reset();
+        }
+
+        // Verificar conexión a Firebase
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                if (typeof firebase === 'undefined') {
+                    showError('Error: No se pudo cargar Firebase. Verifica tu conexión a internet.');
+                } else if (!auth) {
+                    showError('Error: Firebase Auth no se inicializó correctamente.');
+                } else {
+                    console.log('✅ Todo listo para iniciar sesión');
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
+

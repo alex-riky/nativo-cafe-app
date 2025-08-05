@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Nativo Café</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        .verification-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            color: #856404;
+        }
+        
+        .verification-notice h4 {
+            margin: 0 0 8px 0;
+            color: #856404;
+        }
+        
+        .verification-notice p {
+            margin: 0;
+            font-size: 14px;
+        }
+        
+        .resend-verification {
+            background: none;
+            border: none;
+            color: #007bff;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        
+        .resend-verification:hover {
+            color: #0056b3;
+        }
+        
+        .email-verified {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <!-- Notificación -->
+    <div id="notification" class="notification"></div>
+    
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-logo">☕</div>
+            <h1 class="auth-title">Crear Cuenta</h1>
+            <p class="auth-subtitle">Únete a la familia Nativo Café</p>
+            
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+            <div id="successMessage" class="success-message" style="display: none;"></div>
+            
+            <!-- Aviso de verificación de email -->
+            <div id="verificationNotice" class="verification-notice" style="display: none;">
+                <h4>📧 Verifica tu correo electrónico</h4>
+                <p>Hemos enviado un enlace de verificación a tu correo. Por favor verifica tu email antes de continuar.</p>
+                <button class="resend-verification" onclick="resendVerificationEmail()">
+                    Reenviar email de verificación
+                </button>
+            </div>
+            
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="name">Nombre Completo</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Correo Electrónico</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" required minlength="6">
+                    <small>Mínimo 6 caracteres</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm_password">Confirmar Contraseña</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required minlength="6">
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="emailVerificationConsent" required>
+                        Acepto recibir emails de verificación y notificaciones importantes
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full" id="registerBtn">
+                    Crear Cuenta
+                </button>
+            </form>
+            
+            <div class="auth-link">
+                ¿Ya tienes cuenta? <a href="/login">Inicia Sesión</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBR15MaGdT7JpTh0C3w1r1NkI8wmoSQRJU",
+            authDomain: "nativo-cafe-tienda-85377.firebaseapp.com",
+            projectId: "nativo-cafe-tienda-85377",
+            storageBucket: "nativo-cafe-tienda-85377.firebasestorage.app",
+            messagingSenderId: "1034154213401",
+            appId: "1:1034154213401:web:5b654e7d816c875956aa88",
+            measurementId: "G-CE58R1VV8F"
+        };
+
+        // Inicializar Firebase
+        let app, auth, db;
+        let currentUser = null;
+        
+        try {
+            app = firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            db = firebase.firestore();
+            console.log('✅ Firebase inicializado correctamente');
+        } catch (error) {
+            console.error('❌ Error inicializando Firebase:', error);
+            showNotification('Error de configuración. Verifica tu conexión a internet.', 'error');
+        }
+
+        // Función para mostrar notificaciones
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.textContent = message;
+                notification.className = `notification ${type} show`;
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 5000);
+            }
+        }
+
+        // Función para mostrar errores
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            if (errorDiv) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+            }
+            showNotification(message, 'error');
+        }
+
+        // Función para mostrar éxito
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            if (successDiv) {
+                successDiv.textContent = message;
+                successDiv.style.display = 'block';
+            }
+            showNotification(message, 'success');
+        }
+
+        // Función para limpiar mensajes
+        function clearMessages() {
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            if (errorDiv) errorDiv.style.display = 'none';
+            if (successDiv) successDiv.style.display = 'none';
+        }
+
+        // Función para mostrar aviso de verificación
+        function showVerificationNotice() {
+            const notice = document.getElementById('verificationNotice');
+            const form = document.getElementById('registerForm');
+            
+            if (notice && form) {
+                notice.style.display = 'block';
+                form.style.display = 'none';
+            }
+        }
+
+        // Función para ocultar aviso de verificación
+        function hideVerificationNotice() {
+            const notice = document.getElementById('verificationNotice');
+            const form = document.getElementById('registerForm');
+            
+            if (notice && form) {
+                notice.style.display = 'none';
+                form.style.display = 'block';
+            }
+        }
+
+        // Función de registro con verificación de email
+        async function registerUser(email, password, name) {
+            try {
+                console.log('🔄 Iniciando registro para:', email);
+                
+                // Verificar que Firebase esté inicializado
+                if (!auth) {
+                    throw new Error('Firebase no está inicializado');
+                }
+
+                showNotification('Creando cuenta...', 'warning');
+                
+                // Crear usuario en Firebase Auth
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                console.log('✅ Usuario creado en Auth:', user.uid);
+
+                // Actualizar perfil del usuario
+                await user.updateProfile({
+                    displayName: name
+                });
+
+                console.log('✅ Perfil actualizado');
+
+                // Enviar email de verificación
+                await user.sendEmailVerification({
+                    url: window.location.origin + '/login',
+                    handleCodeInApp: false
+                });
+
+                console.log('✅ Email de verificación enviado');
+
+                // Crear documento en Firestore
+                const userData = {
+                    name: name,
+                    email: email,
+                    role: 'customer',
+                    emailVerified: false,
+                    createdAt: new Date().toISOString(),
+                    photoURL: null
+                };
+
+                await db.collection('users').doc(user.uid).set(userData);
+                console.log('✅ Usuario guardado en Firestore');
+
+                // Mostrar mensaje de verificación
+                showSuccess('¡Cuenta creada exitosamente! Revisa tu correo para verificar tu email.');
+                showVerificationNotice();
+                
+                // Guardar referencia del usuario actual
+                currentUser = user;
+
+            } catch (error) {
+                console.error('❌ Error en registro:', error);
+                
+                let errorMessage = 'Error al crear la cuenta';
+                
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage = 'Este correo ya está registrado. Intenta iniciar sesión.';
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'El correo electrónico no es válido.';
+                        break;
+                    case 'auth/network-request-failed':
+                        errorMessage = 'Error de conexión. Verifica tu internet.';
+                        break;
+                    default:
+                        errorMessage = error.message || 'Error desconocido al crear la cuenta';
+                }
+                
+                showError(errorMessage);
+            }
+        }
+
+        // Función para reenviar email de verificación
+        async function resendVerificationEmail() {
+            if (!currentUser) {
+                showError('No hay usuario para reenviar verificación');
+                return;
+            }
+
+            try {
+                await currentUser.sendEmailVerification({
+                    url: window.location.origin + '/login',
+                    handleCodeInApp: false
+                });
+                
+                showSuccess('Email de verificación reenviado. Revisa tu bandeja de entrada.');
+            } catch (error) {
+                console.error('Error reenviando email:', error);
+                showError('Error al reenviar email de verificación');
+            }
+        }
+
+        // Verificar estado de verificación de email
+        function checkEmailVerification() {
+            if (auth.currentUser) {
+                auth.currentUser.reload().then(() => {
+                    if (auth.currentUser.emailVerified) {
+                        // Actualizar estado en Firestore
+                        db.collection('users').doc(auth.currentUser.uid).update({
+                            emailVerified: true
+                        }).then(() => {
+                            showSuccess('¡Email verificado exitosamente! Redirigiendo...');
+                            setTimeout(() => {
+                                window.location.href = '/';
+                            }, 2000);
+                        });
+                    }
+                });
+            }
+        }
+
+        // Event listener para el formulario
+        document.addEventListener('DOMContentLoaded', function() {
+            const registerForm = document.getElementById('registerForm');
+            const registerBtn = document.getElementById('registerBtn');
+            
+            if (registerForm) {
+                registerForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    clearMessages();
+                    
+                    // Deshabilitar botón
+                    registerBtn.disabled = true;
+                    registerBtn.textContent = 'Creando cuenta...';
+                    
+                    try {
+                        const formData = new FormData(e.target);
+                        const name = formData.get('name').trim();
+                        const email = formData.get('email').trim();
+                        const password = formData.get('password');
+                        const confirmPassword = formData.get('confirm_password');
+                        const emailConsent = document.getElementById('emailVerificationConsent').checked;
+                        
+                        // Validaciones
+                        if (!name || !email || !password || !confirmPassword) {
+                            throw new Error('Todos los campos son obligatorios');
+                        }
+                        
+                        if (!emailConsent) {
+                            throw new Error('Debes aceptar recibir emails de verificación');
+                        }
+                        
+                        if (password !== confirmPassword) {
+                            throw new Error('Las contraseñas no coinciden');
+                        }
+                        
+                        if (password.length < 6) {
+                            throw new Error('La contraseña debe tener al menos 6 caracteres');
+                        }
+                        
+                        // Registrar usuario
+                        await registerUser(email, password, name);
+                        
+                    } catch (error) {
+                        console.error('Error en formulario:', error);
+                        showError(error.message);
+                    } finally {
+                        // Rehabilitar botón
+                        registerBtn.disabled = false;
+                        registerBtn.textContent = 'Crear Cuenta';
+                    }
+                });
+            }
+
+            // Verificar si el usuario ya está logueado
+            if (auth) {
+                auth.onAuthStateChanged(function(user) {
+                    if (user) {
+                        if (user.emailVerified) {
+                            console.log('Usuario ya logueado y verificado, redirigiendo...');
+                            window.location.href = '/';
+                        } else {
+                            console.log('Usuario logueado pero no verificado');
+                            currentUser = user;
+                            showVerificationNotice();
+                            
+                            // Verificar periódicamente si el email fue verificado
+                            const verificationInterval = setInterval(() => {
+                                checkEmailVerification();
+                                if (user.emailVerified) {
+                                    clearInterval(verificationInterval);
+                                }
+                            }, 3000);
+                        }
+                    }
+                });
+            }
+        });
+
+        // Verificar conexión a Firebase
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                if (typeof firebase === 'undefined') {
+                    showError('Error: No se pudo cargar Firebase. Verifica tu conexión a internet.');
+                } else if (!auth) {
+                    showError('Error: Firebase Auth no se inicializó correctamente.');
+                } else {
+                    console.log('✅ Todo listo para registrar usuarios');
+                }
+            }, 2000);
+        });
+
+        // Verificar periódicamente el estado de verificación cuando hay un usuario
+        setInterval(() => {
+            if (currentUser && !currentUser.emailVerified) {
+                checkEmailVerification();
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
+

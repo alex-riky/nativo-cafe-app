@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre Nosotros - Nativo Café</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        /* Estilos específicos para la sección de contenido con imagen */
+        .content-with-image {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            margin: 40px 0;
+            padding: 40px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .content-with-image.reverse {
+            flex-direction: row-reverse;
+        }
+
+        .content-text {
+            flex: 1;
+        }
+
+        .content-image {
+            flex: 0 0 300px;
+            height: 250px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .section-subtitle {
+            font-size: 20px;
+            color: #8B4513;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .highlight-text {
+            background: linear-gradient(120deg, rgba(212, 175, 55, 0.2) 0%, rgba(212, 175, 55, 0.1) 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* Estilos para centrar los valores */
+        .about-card {
+            text-align: center;
+            padding: 30px 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .about-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .about-card h4 {
+            font-size: 20px;
+            color: #8B4513;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .about-card p {
+            color: #666;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .about-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .about-card {
+            flex: 0 0 350px;
+            max-width: 400px;
+            text-align: center;
+            padding: 40px 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .content-with-image,
+            .content-with-image.reverse {
+                flex-direction: column;
+                text-align: center;
+                padding: 30px 20px;
+            }
+            
+            .content-image {
+                flex: none;
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .about-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Notificación -->
+    <div id="notification" class="notification"></div>
+    
+    <!-- Header -->
+    <header>
+        <nav>
+            <a href="/" class="logo">
+            <img src="/static/img/aa.png" alt="Nativo Café Logo" class="logo-img">
+            </a>
+            
+            <ul class="menu">
+                <li><a href="/">Inicio</a></li>
+                <li><a href="/productos">Productos</a></li>
+                <li><a href="/sobre-nosotros" style="color: #8B4513; font-weight: bold;">Sobre Nosotros</a></li>
+                <li><a href="/equipo">Equipo</a></li>
+                <li><a href="/menu">Menú</a></li>
+                <li><a href="/ubicacion">Ubicación</a></li>
+            </ul>
+            
+            <div class="nav-icons">
+                <button class="cart-icon" id="cartIcon" onclick="toggleCart()">
+                    🛒
+                    <span class="cart-count" id="cartCount">0</span>
+                </button>
+                
+                <div class="user-dropdown">
+                    <button class="user-dropdown-btn" id="userDropdownBtn">
+                        <div class="user-avatar" id="userAvatar"></div>
+                        <span class="user-name" id="userName">Usuario</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    
+                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                        <a href="#" onclick="showProfileModal()">
+                            👤 Perfil
+                        </a>
+                        <a href="#" onclick="showModal('changePasswordModal')">
+                            ⚙️ Configuración
+                        </a>
+                        <a href="/admin" id="adminLink" style="display: none;">
+                            🛠️ Panel Admin
+                        </a>
+                        <hr>
+                        <a href="#" onclick="logout()">
+                            🚪 Cerrar Sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Historia de Marca Section -->
+        <section class="section">
+            <div class="container">
+                <div class="content-with-image">
+                    <div class="content-text">
+                        <h2 class="section-title">Historia de Marca</h2>
+                        <p>Nativo Café nace con el propósito de ofrecer una experiencia única que conecta a las personas con la esencia del café guatemalteco. Nos enorgullecemos de ser un espacio que celebra nuestras raíces y apoya a pequeños productores, mientras compartimos historias en cada taza.</p>
+                    </div>
+                    <img src="/static/img/natsobrenosotros.jpg" alt="Historia de Nativo Café" class="content-image">
+                </div>
+            </div>
+        </section>
+
+        <!-- Qué es Nativo Section -->
+        <section class="section" style="background: #fefcf8;">
+            <div class="container">
+                <div class="content-with-image reverse">
+                    <div class="content-text">
+                        <h2 class="section-title">¿Qué Es Nativo?</h2>
+                        <p><span class="highlight-text">Nativo es una cafetería de especialidad que nace desde el origen.</span></p>
+                        <p>Venimos de una familia de pequeños productores de café, que conoce de cerca las dificultades del campo, y decidimos transformar esa experiencia en un proyecto que conecta a todos los que hacen posible una buena taza: productores, tostadores, baristas y clientes.</p>
+                        <p>Aquí servimos cafés con historia, seleccionados por su calidad y trazabilidad. <span class="highlight-text">Trabajamos con algunos de los mejores de la industria para ofrecer siempre una taza que represente lo que somos.</span></p>
+                        <p>Más que un café, <span class="highlight-text">Nativo es una red que busca impactar positivamente toda la cadena</span>, apoyando a pequeños productores, creando comunidad y sirviendo bebidas que cuentan algo más.</p>
+                        <p>Bienvenidos a Nativo. <span class="highlight-text">Aquí, el café no solo se sirve. Se vive.</span></p>
+                    </div>
+                    <img src="/static/img/natsobrenosotros2.jpg" alt="Cafetería de especialidad Nativo" class="content-image">
+                </div>
+            </div>
+        </section>
+
+        <!-- Misión Section -->
+        <section class="section">
+            <div class="container">
+                <div class="content-with-image">
+                    <div class="content-text">
+                        <h2 class="section-title">Nuestra Misión</h2>
+                        <p>Ofrecemos café y gastronomía de alta calidad en un ambiente acogedor, comprometidos con el comercio justo y la sostenibilidad para apoyar a pequeños productores. En cada taza contamos una historia y creamos momentos inolvidables.</p>
+                    </div>
+                    <img src="/static/img/natsobrenosotros3.jpg" alt="Misión Nativo Café" class="content-image">
+                </div>
+            </div>
+        </section>
+
+        <!-- Visión Section -->
+        <section class="section" style="background: #fefcf8;">
+            <div class="container">
+                <div class="content-with-image reverse">
+                    <div class="content-text">
+                        <h2 class="section-title">Nuestra Visión</h2>
+                        <p>Ser la cafetería de referencia para quienes buscan una experiencia única, con café de especialidad, gastronomía de calidad y un servicio que haga sentir a los clientes como en casa.</p>
+                    </div>
+                    <img src="/static/img/natsobrenosotros4.jpg" alt="Visión Nativo Café" class="content-image">
+                </div>
+            </div>
+        </section>
+
+        <!-- Valores Section -->
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title" style="text-align: center; margin-bottom: 50px;">Nuestros Valores</h2>
+                <div class="about-grid">
+                    <div class="about-card">
+                        <h4>Calidad</h4>
+                        <p>Nos dedicamos a ofrecer café y gastronomía excepcionales, cuidando cada detalle desde el origen hasta la experiencia final del cliente.</p>
+                    </div>
+                    <div class="about-card">
+                        <h4>Autenticidad</h4>
+                        <p>Valoramos nuestras raíces, compartiendo la historia y el esfuerzo detrás de cada taza para conectar a las personas con el origen del café.</p>
+                    </div>
+                    <div class="about-card">
+                        <h4>Pasión por el café</h4>
+                        <p>Vivimos y transmitimos nuestra pasión por el café, destacando su impacto cultural y su capacidad de conectar a las personas.</p>
+                    </div>
+                    <div class="about-card">
+                        <h4>Conexión</h4>
+                        <p>Fomentamos relaciones auténticas entre nuestros productores, clientes y comunidad, creando un espacio de unión y pertenencia.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Qué Hacemos Section -->
+        <section class="section" style="background: #fefcf8;">
+            <div class="container">
+                <div class="content-with-image">
+                    <div class="content-text">
+                        <h2 class="section-title">¿Qué Hacemos?</h2>
+                        <p>Preparamos café de especialidad con altos estándares de calidad, acompañado de una oferta gastronómica que complementa la experiencia. Más que servir café, creamos momentos que conectan a las personas con la historia y el sabor de cada taza.</p>
+                    </div>
+                    <img src="/static/img/natsobrenosotros5.jpg" alt="Qué hacemos en Nativo" class="content-image">
+                </div>
+            </div>
+        </section>
+
+        <!-- Por Qué Hacemos Section -->
+        <section class="section">
+            <div class="container">
+                <div class="content-with-image reverse">
+                    <div class="content-text">
+                        <h2 class="section-title">¿Por Qué Hacemos Lo Que Hacemos?</h2>
+                        <p>Creemos que el café es más que una bebida; es una conexión con nuestras raíces, nuestras historias y nuestras comunidades. Nuestro propósito es crear un impacto positivo, desde la vida de los pequeños productores hasta la experiencia de cada cliente.</p>
+                    </div>
+                    <img src="/static/img/natsobrenosotros6.jpg" alt="Por qué lo hacemos" class="content-image">
+                </div>
+            </div>
+        </section>
+
+        <!-- Cómo Lo Hacemos Section -->
+        <section class="section" style="background: #fefcf8;">
+            <div class="container">
+                <div class="content-with-image">
+                    <div class="content-text">
+                        <h2 class="section-title">¿Cómo Lo Hacemos?</h2>
+                        <p>Cuidamos cada detalle del proceso: desde apoyar a productores con prácticas sostenibles y comercio justo, hasta ofrecer un ambiente acogedor donde cada taza refleja nuestra pasión y compromiso con la excelencia. Nos aseguramos de que cada visita sea única y memorable.</p>
+                    </div>
+                    <img src="/static/img/natsobrenosotros7.jpg" alt="Cómo lo hacemos" class="content-image">
+                </div>
+            </div>
+        </section>
+        
+    </main>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3 class="cart-title">Tu Carrito</h3>
+            <button class="close-cart" onclick="closeCart()">×</button>
+        </div>
+        
+        <div class="cart-content">
+            <div id="cartItems">
+                <!-- Los items del carrito se cargarán dinámicamente -->
+            </div>
+        </div>
+        
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total: </span>
+                <span id="cartTotal">Q0.00</span>
+            </div>
+            <button class="checkout-btn" id="checkoutBtn" onclick="showCheckout()">
+                Proceder al Checkout
+            </button>
+            <button class="btn btn-secondary btn-full" onclick="clearCart()" style="margin-top: 0.5rem;">
+                Limpiar Carrito
+            </button>
+        </div>
+    </div>
+
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    
+    <script>
+        // Funciones del carrito y navegación
+        function toggleCart() {
+            const cartSidebar = document.getElementById('cartSidebar');
+            const cartOverlay = document.getElementById('cartOverlay');
+            cartSidebar.classList.toggle('active');
+            cartOverlay.classList.toggle('active');
+        }
+
+        function closeCart() {
+            const cartSidebar = document.getElementById('cartSidebar');
+            const cartOverlay = document.getElementById('cartOverlay');
+            cartSidebar.classList.remove('active');
+            cartOverlay.classList.remove('active');
+        }
+
+        function showProfileModal() {
+            alert('Función de perfil en desarrollo');
+        }
+
+        function showModal(modalId) {
+            alert('Modal ' + modalId + ' en desarrollo');
+        }
+
+        function logout() {
+            alert('Función de logout en desarrollo');
+        }
+
+        function showCheckout() {
+            alert('Función de checkout en desarrollo');
+        }
+
+        function clearCart() {
+            alert('Carrito limpiado');
+        }
+    </script>
+    
+    <script src="{{ url_for('static', filename='js/firebase-app.js') }}"></script>
+</body>
+</html>
