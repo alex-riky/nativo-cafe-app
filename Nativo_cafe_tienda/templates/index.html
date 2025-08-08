@@ -219,7 +219,7 @@
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            height: 91vh;
+            height: 100vh;
             display: flex;
             align-items: center;
             color: var(--white);
@@ -267,10 +267,12 @@
         }
 
         .hero-buttons {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
             gap: 1rem;
             justify-content: center;
-            flex-wrap: wrap;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .btn-hero {
@@ -282,10 +284,12 @@
             transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             cursor: pointer;
             border: none;
+            text-align: center;
         }
 
         .btn-primary-hero {
@@ -303,15 +307,136 @@
         }
 
         .btn-secondary-hero {
-            background: transparent;
+            background: var(--cafe);
             color: white;
-            border: 2px solid white;
         }
 
         .btn-secondary-hero:hover {
             background: white;
             color: var(--cafe);
             transform: translateY(-3px);
+            border: 2px solid var(--cafe);
+        }
+
+        .btn-tertiary-hero {
+            background: var(--verde);
+            color: white;
+            border: 2px solid var(--verde);
+        }
+
+        .btn-tertiary-hero:hover {
+            background: transparent;
+            color: var(--verde);
+            background-color: rgba(255,255,255,0.9);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-quaternary-hero {
+            background: var(--verde);
+            color: white;
+        }
+
+        .btn-quaternary-hero:hover {
+            background: var(--white );
+            color: var(--verde);
+            transform: translateY(-3px);
+            border: 2px solid var(--verde);
+        }
+
+        /* Footer - TODO CENTRADO */
+        .footer {
+            position: sticky;
+            background: var(--beige);
+            color: rgb(0, 0, 0);
+            padding: 10px 0;
+            margin-top: auto;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 20px;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .footer-logo {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .footer-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .footer-contact {
+            text-align: center;
+        }
+
+        .footer-email {
+            color:var(--verde);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .footer-email:hover {
+            color: var(--cafe);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .social-link:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         /* Container */
@@ -368,6 +493,14 @@
             background: #2196F3;
         }
 
+        .img-size{
+            width: 500px;
+            height: 320px;
+            border-radius: 30px;
+            margin-bottom: 50px;
+            object-fit: fill;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .nav-menu {
@@ -383,14 +516,19 @@
             }
 
             .hero-buttons {
-                flex-direction: column;
-                align-items: center;
+                grid-template-columns: 1fr;
+                max-width: 300px;
             }
 
             .btn-hero {
                 width: 100%;
-                max-width: 300px;
                 justify-content: center;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
             }
         }
 
@@ -410,14 +548,25 @@
             .hero-content {
                 padding: 0 15px;
             }
-        }
 
-        .img-size{
-            width: 500px;
-            height: 320px;
-            border-radius: 30px;
-            margin-bottom: 50px;
-            object-fit: fill;
+            .img-size {
+                width: 300px;
+                height: 200px;
+            }
+
+            .footer-content {
+                padding: 0 15px;
+            }
+
+            .social-links {
+                gap: 10px;
+            }
+
+            .social-link {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
         }
     </style>
 </head>
@@ -458,10 +607,10 @@
                             👤 Perfil
                         </a>
                         <a href="#" onclick="showModal('changePasswordModal')">
-                            ⚙️ Configuración
+                            ⚙ Configuración
                         </a>
                         <a href="/admin" id="adminLink" style="display: none;">
-                            🛠️ Panel Admin
+                            🛠 Panel Admin
                         </a>
                         <hr>
                         <a href="#" onclick="logout()">
@@ -474,22 +623,54 @@
     </header>
 
     <!-- Main Content - Solo Hero Section -->
-    <main>
+    <main style="min-height: 100vh; display: flex; flex-direction: column;">
         <section class="hero">
             <div class="container">
                 <div class="hero-content">
-                        <img src="/static/img/Nativoblanco.png" class="img-size">
+                    <img src="/static/img/Nativoblanco.png" class="img-size">
                     <div class="hero-buttons">
                         <button class="btn-hero btn-primary-hero" onclick="requireLogin('/productos')">
-                            Ver Productos
+                             Ver Productos
                         </button>
                         <a href="/menu" class="btn-hero btn-secondary-hero">
-                            Nuestro Menú
+                             Nuestro Menú
+                        </a>
+                        <a href="/sobre-nosotros" class="btn-hero btn-tertiary-hero">
+                             Sobre Nosotros
+                        </a>
+                        <a href="/ubicacion" class="btn-hero btn-quaternary-hero">
+                             Ubicación
                         </a>
                     </div>
                 </div>
             </div>
         </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-text">© 2025 Nativo Café</div>
+                </div>
+                
+                <div class="footer-contact">
+                    <a href="mailto:nativocafe506@gmail.com" class="footer-email">
+                        ✉ nativocafe506@gmail.com
+                    </a>
+                </div>
+                
+                <div class="social-links">
+                    <a href="https://www.instagram.com/nativo_cafe_" target="_blank" class="social-link" title="Instagram">
+                        📷
+                    </a>
+                </div>
+
+                <div class="footer-brand">
+                    <div class="footer-text">Ly Nativos  ❤</div>
+                </div>
+
+            </div>
+        </footer>
     </main>
 
     <!-- Firebase SDK -->
@@ -514,7 +695,7 @@
                 }
             } else {
                 // Si no está logueado, redirigir a la página de login con el destino
-                const loginUrl = destination === 'cart' ? '/login' : `/login?redirect=${encodeURIComponent(destination)}`;
+                const loginUrl = destination === 'cart' ? '/login' : /login?redirect=${encodeURIComponent(destination)};
                 window.location.href = loginUrl;
             }
         }
@@ -544,7 +725,7 @@
             const scrolled = window.pageYOffset;
             const hero = document.querySelector('.hero');
             if (hero) {
-                hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+                hero.style.transform = translateY(${scrolled * 0.5}px);
             }
         });
 
