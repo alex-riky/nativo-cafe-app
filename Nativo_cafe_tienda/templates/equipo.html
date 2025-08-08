@@ -135,6 +135,101 @@
             display: none;
         }
 
+        /* Footer - Copiado del index */
+        .footer {
+            position: sticky;
+            background: #F5F0E8;
+            color: rgb(0, 0, 0);
+            padding: 10px 0;
+            margin-top: auto;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 20px;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .footer-logo {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .footer-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .footer-contact {
+            text-align: center;
+        }
+
+        .footer-email {
+            color: #6B8E5A;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .footer-email:hover {
+            color: #8B5A2B;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .social-link:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
         /* Responsivo */
         @media (max-width: 1024px) {
             .staff-container {
@@ -161,6 +256,12 @@
             .staff-card {
                 width: 300px;
             }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
         }
 
         @media (max-width: 480px) {
@@ -174,6 +275,20 @@
             .staff-card img {
                 width: 160px;
                 height: 160px;
+            }
+
+            .footer-content {
+                padding: 0 15px;
+            }
+
+            .social-links {
+                gap: 10px;
+            }
+
+            .social-link {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
             }
         }
     </style>
@@ -233,7 +348,7 @@
     </header>
 
     <!-- Main Content -->
-    <main>
+    <main style="min-height: 100vh; display: flex; flex-direction: column;">
         <section class="staff-section">
             
             <div class="staff-container" id="staffContainer">
@@ -302,6 +417,31 @@
             </div>
         </section>
 
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-text">© 2025 Nativo Café</div>
+                </div>
+                
+                <div class="footer-contact">
+                    <a href="mailto:nativocafe506@gmail.com" class="footer-email">
+                        ✉️ nativocafe506@gmail.com
+                    </a>
+                </div>
+                
+                <div class="social-links">
+                    <a href="https://www.instagram.com/nativo_cafe_" target="_blank" class="social-link" title="Instagram">
+                        📷
+                    </a>
+                </div>
+
+                <div class="footer-brand">
+                    <div class="footer-text">Ly Nativos  ❤️</div>
+                </div>
+
+            </div>
+        </footer>
     </main>
 
     <!-- Cart Sidebar -->
