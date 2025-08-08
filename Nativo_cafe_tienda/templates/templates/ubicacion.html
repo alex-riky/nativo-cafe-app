@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ubicación - Nativo Café</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    
+    <style>
+        /* Reset y configuración base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Paleta de colores */
+        :root {
+            --verde: #6B8E5A;
+            --cafe: #8B5A2B;
+            --beige: #F5F0E8;
+            --white: #FFFFFF;
+            --black: #2C2C2C;
+            --text-gray: #4A4A4A;
+            --light-gray: #F8F8F8;
+            --coffee-light: #D2B48C;
+            --coffee-medium: #A0956B;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: var(--black);
+            overflow-x: hidden;
+            background-color: var(--beige);
+        }
+
+        /* ========== HEADER DINÁMICO RESPONSIVO ========== */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(139, 90, 43, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Logo */
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            z-index: 1001;
+        }
+
+        .logo-img {
+            height: 45px;
+            width: auto;
+            transition: height 0.3s ease;
+        }
+
+        /* Menú principal */
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-menu li {
+            margin: 0;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: var(--black);
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            position: relative;
+        }
+
+        .nav-menu a:hover {
+            color: var(--verde);
+            transform: translateY(-2px);
+        }
+
+        .nav-menu a.active {
+            color: var(--cafe);
+            font-weight: bold;
+        }
+
+        /* Iconos de navegación */
+        .nav-icons {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .cart-icon {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            position: relative;
+            color: var(--text-gray);
+            transition: color 0.3s ease;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .cart-icon:hover {
+            color: var(--cafe);
+            background: rgba(139, 90, 43, 0.1);
+            transform: scale(1.1);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--cafe);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        /* Dropdown de usuario */
+        .user-dropdown {
+            position: relative;
+        }
+
+        .user-dropdown-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .user-dropdown-btn:hover {
+            background: rgba(139, 90, 43, 0.1);
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: var(--cafe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .user-name {
+            color: var(--text-gray);
+            font-weight: 500;
+        }
+
+        .dropdown-arrow {
+            color: var(--text-gray);
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .user-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1002;
+        }
+
+        .user-dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .user-dropdown-menu a {
+            display: block;
+            padding: 0.8rem 1rem;
+            color: var(--text-gray);
+            text-decoration: none;
+            transition: background 0.3s ease;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .user-dropdown-menu a:hover {
+            background: var(--beige);
+            color: var(--cafe);
+        }
+
+        .user-dropdown-menu hr {
+            margin: 0;
+            border: none;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        /* Botón hamburguesa (móvil) */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 0.5rem;
+            z-index: 1001;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: var(--black);
+            margin: 2px 0;
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+
+        /* ========== RESPONSIVE BREAKPOINTS ========== */
+
+        /* Tablets grandes y laptops pequeñas */
+        @media (max-width: 1024px) {
+            nav {
+                padding: 0.8rem 1.5rem;
+            }
+            
+            .nav-menu {
+                gap: 1.5rem;
+            }
+            
+            .nav-menu a {
+                font-size: 0.95rem;
+                padding: 0.4rem 0.8rem;
+            }
+        }
+
+        /* Tablets */
+        @media (max-width: 768px) {
+            nav {
+                padding: 0.8rem 1rem;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .nav-menu {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                background: rgba(255, 255, 255, 0.98);
+                backdrop-filter: blur(15px);
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 2rem;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+            }
+
+            .nav-menu.active {
+                transform: translateX(0);
+            }
+
+            .nav-menu a {
+                font-size: 1.2rem;
+                padding: 1rem 2rem;
+                width: 200px;
+                text-align: center;
+                border-radius: 10px;
+            }
+
+            .nav-icons {
+                gap: 0.8rem;
+                z-index: 1001;
+            }
+
+            .cart-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
+            }
+
+            .user-dropdown-btn {
+                padding: 0.3rem 0.6rem;
+            }
+
+            .user-avatar {
+                width: 30px;
+                height: 30px;
+            }
+
+            .user-name {
+                font-size: 0.9rem;
+            }
+
+            .logo-img {
+                height: 40px;
+            }
+        }
+
+        /* Móviles */
+        @media (max-width: 480px) {
+            nav {
+                padding: 0.6rem 0.8rem;
+            }
+
+            .logo-img {
+                height: 35px;
+            }
+
+            .cart-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+
+            .cart-count {
+                width: 18px;
+                height: 18px;
+                font-size: 0.7rem;
+            }
+
+            .user-avatar {
+                width: 28px;
+                height: 28px;
+            }
+
+            .user-name {
+                display: none;
+            }
+
+            .dropdown-arrow {
+                font-size: 0.7rem;
+            }
+
+            .user-dropdown-menu {
+                right: -10px;
+                min-width: 180px;
+            }
+
+            .nav-menu a {
+                width: 180px;
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Móviles muy pequeños */
+        @media (max-width: 360px) {
+            nav {
+                padding: 0.5rem 0.6rem;
+            }
+
+            .nav-icons {
+                gap: 0.5rem;
+            }
+        }
+
+        /* Notificaciones */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #4CAF50;
+        }
+
+        .notification.error {
+            background: #f44336;
+        }
+
+        .notification.warning {
+            background: #ff9800;
+        }
+
+        .notification.info {
+            background: #2196F3;
+        }
+
+        /* Estilos del carrito (copiados del original) */
+        .cart-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .cart-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .cart-sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 400px;
+            height: 100%;
+            background: white;
+            z-index: 9999;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cart-sidebar.active {
+            transform: translateX(0);
+        }
+
+        .cart-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-title {
+            margin: 0;
+            color: var(--black);
+        }
+
+        .close-cart {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-gray);
+        }
+
+        .cart-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .cart-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--cafe);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .checkout-btn:hover {
+            background: #6d4722;
+        }
+
+        .btn-secondary {
+            background: var(--verde);
+        }
+
+        .btn-secondary:hover {
+            background: #5a7a4a;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* Layout principal con margen para header fijo */
+        main {
+            margin-top: 80px;
+        }
+
+        /* Layout principal */
+        .location-container {
+            display: grid;
+            grid-template-columns: 350px 1fr 400px;
+            height: calc(100vh - 80px);
+            gap: 0;
+        }
+
+        /* Panel izquierdo - Información */
+        .info-panel {
+            background: var(--white);
+            padding: 40px 30px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .location-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--black);
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--cafe);
+            padding-bottom: 15px;
+        }
+
+        .info-item {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--cafe);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            color: var(--text-gray);
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .info-value strong {
+            color: var(--black);
+        }
+
+        /* Panel central - Mapa */
+        .map-panel {
+            position: relative;
+            background: var(--light-gray);
+        }
+
+        .map-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .map-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            filter: saturate(0.8);
+        }
+
+        .map-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.95);
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .map-overlay h4 {
+            margin: 0 0 5px 0;
+            color: var(--black);
+            font-size: 1.1rem;
+        }
+
+        .map-overlay p {
+            margin: 0;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+
+        /* Panel derecho - Imagen y botones */
+        .image-panel {
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .cafe-image {
+            flex: 1;
+            background-image: url('/static/img/ubiimagen.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+        }
+
+        .image-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            color: white;
+            padding: 30px 25px 25px;
+        }
+
+        .image-overlay h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.3rem;
+        }
+
+        .image-overlay p {
+            margin: 0;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Sección de botones */
+        .action-buttons {
+            padding: 25px;
+            background: var(--white);
+            border-top: 1px solid #eee;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .btn-primary {
+            background: var(--cafe);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #6d4722;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6B8E5A;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #61b438;
+            transform: translateY(-2px);
+        }
+
+        .btn-tertiary {
+            background: transparent;
+            color: var(--cafe);
+            border: 2px solid var(--cafe);
+        }
+
+        .btn-tertiary:hover {
+            background: var(--cafe);
+            color: white;
+        }
+
+        /* Información adicional */
+        .additional-info {
+            background: var(--beige);
+            padding: 30px;
+            margin-top: auto;
+        }
+
+        .additional-info h4 {
+            color: var(--black);
+            margin: 0 0 15px 0;
+            font-size: 1rem;
+        }
+
+        .additional-info p {
+            color: var(--text-gray);
+            font-size: 0.85rem;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        /* Responsivo */
+        @media (max-width: 1200px) {
+            .location-container {
+                grid-template-columns: 300px 1fr 350px;
+            }
+        }
+
+        @media (max-width: 968px) {
+            main {
+                margin-top: 70px;
+            }
+
+            .location-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 400px auto;
+                height: auto;
+            }
+
+            .info-panel {
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+
+            .image-panel {
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+                min-height: 300px;
+            }
+
+            .cafe-image {
+                min-height: 200px;
+            }
+
+            .cart-sidebar {
+                width: 100%;
+                max-width: 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            main {
+                margin-top: 65px;
+            }
+
+            .info-panel {
+                padding: 25px 20px;
+            }
+
+            .location-title {
+                font-size: 1.5rem;
+            }
+
+            .action-buttons {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            main {
+                margin-top: 60px;
+            }
+
+            .cart-sidebar {
+                width: 100%;
+            }
+        }
+
+        /* Footer simple */
+        .simple-footer {
+            background: var(--black);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        /* Animaciones suaves */
+        * {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Notificación -->
+    <div id="notification" class="notification"></div>
+    
+    <!-- Header Dinámico Responsivo -->
+    <header>
+        <nav>
+            <a href="/" class="logo">
+                <img src="/static/img/aa.png" alt="Nativo Café Logo" class="logo-img">
+            </a>
+            
+            <!-- Menú hamburguesa para móviles -->
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            
+            <ul class="nav-menu" id="menu">
+                <li><a href="/">Inicio</a></li>
+                <li><a href="#" onclick="requireLogin('/productos')">Productos</a></li>
+                <li><a href="/sobre-nosotros">Sobre Nosotros</a></li>
+                <li><a href="/equipo">Equipo</a></li>
+                <li><a href="/menu">Menú</a></li>
+                <li><a href="/ubicacion" class="active">Ubicación</a></li>
+            </ul>
+            
+            <div class="nav-icons">
+                <button class="cart-icon" id="cartIcon" onclick="requireLogin('cart')">
+                    🛒
+                    <span class="cart-count" id="cartCount">0</span>
+                </button>
+                
+                <div class="user-dropdown" id="userSection" style="display: none;">
+                    <button class="user-dropdown-btn" id="userDropdownBtn">
+                        <div class="user-avatar" id="userAvatar"></div>
+                        <span class="user-name" id="userName">Usuario</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    
+                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                        <a href="#" onclick="showProfileModal()">
+                            👤 Perfil
+                        </a>
+                        <a href="#" onclick="showModal('changePasswordModal')">
+                            ⚙️ Configuración
+                        </a>
+                        <a href="/admin" id="adminLink" style="display: none;">
+                            🛠️ Panel Admin
+                        </a>
+                        <hr>
+                        <a href="#" onclick="logout()">
+                            🚪 Cerrar Sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <div class="location-container">
+            <!-- Panel Izquierdo - Información -->
+            <div class="info-panel">
+                <h1 class="location-title">Panajachel</h1>
+                
+                <div class="info-item">
+                    <div class="info-label">DIRECCIÓN</div>
+                    <div class="info-value">Calle del Frutal<br>Panajachel Sololá</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">HORARIO</div>
+                    <div class="info-value">
+                        <strong>Lunes a Viernes:</strong> 7:00 AM - 8:00 PM<br>
+                        <strong>Sábado:</strong> 8:00 AM - 6:00 PM<br>
+                        <strong>Domingo:</strong> Cerrado
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">PARQUEO</div>
+                    <div class="info-value">Frente al Café</div>
+                </div>
+
+                <div class="additional-info">
+                    <h4>Café de Especialidad</h4>
+                    <p>Disfruta de nuestros cafés guatemaltecos de origen único, tostados artesanalmente y preparados por baristas especializados.</p>
+                </div>
+            </div>
+
+            <!-- Panel Central - Mapa -->
+            <div class="map-panel">
+                <div class="map-container">
+                    <iframe 
+                        class="map-iframe"
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d881.7289596043503!2d-91.1547537479055!3d14.7412882490032!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85894b220e6b5889%3A0x10bdf86fc0641425!2sNativo%20Caf%C3%A9!5e0!3m2!1ses-419!2sgt!4v1754365005692!5m2!1ses-419!2sgt"
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                    
+                    <div class="map-overlay">
+                        <h4>Nativo Café</h4>
+                        <p>Calle del Frutal Panajachel Sololá</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Derecho - Imagen y Acciones -->
+            <div class="image-panel">
+                <div class="cafe-image">
+                    <div class="image-overlay">
+                        <h3>Nativo Café</h3>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="https://www.google.com/maps/dir//Nativo+Café+calle+en+frutal+de+Calle+Del+Frutal+Panajachel" target="_blank" class="btn btn-primary">
+                        Ver Ruta en Google Maps
+                    </a>
+                    
+                    <a href="https://wa.me/50246080976" target="_blank" class="btn btn-secondary">
+                        Contactar por WhatsApp
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3 class="cart-title">Tu Carrito</h3>
+            <button class="close-cart" onclick="closeCart()">×</button>
+        </div>
+        
+        <div class="cart-content">
+            <div id="cartItems">
+                <!-- Los items del carrito se cargarán dinámicamente -->
+            </div>
+        </div>
+        
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total: </span>
+                <span id="cartTotal">Q0.00</span>
+            </div>
+            <button class="checkout-btn" id="checkoutBtn" onclick="showCheckout()">
+                Proceder al Checkout
+            </button>
+            <button class="btn btn-secondary btn-full" onclick="clearCart()" style="margin-top: 0.5rem;">
+                Limpiar Carrito
+            </button>
+        </div>
+    </div>
+
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    
+    <!-- Firebase App - Manejo de autenticación -->
+    <script src="{{ url_for('static', filename='js/firebase-app.js') }}"></script>
+    
+    <script>
+        // Toggle del menú hamburguesa
+        const hamburger = document.getElementById('hamburger');
+        const menu = document.getElementById('menu');
+        const userDropdownBtn = document.getElementById('userDropdownBtn');
+        const userDropdownMenu = document.getElementById('userDropdownMenu');
+
+        // Función para toggle del menú móvil
+        if (hamburger) {
+            hamburger.addEventListener('click', function() {
+                hamburger.classList.toggle('active');
+                menu.classList.toggle('active');
+                document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : 'auto';
+            });
+        }
+
+        // Cerrar menú al hacer click en un enlace (móvil)
+        if (menu) {
+            menu.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    hamburger.classList.remove('active');
+                    menu.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+        }
+
+        // Toggle del dropdown de usuario
+        if (userDropdownBtn) {
+            userDropdownBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                userDropdownMenu.classList.toggle('show');
+                
+                // Rotar flecha
+                const arrow = userDropdownBtn.querySelector('.dropdown-arrow');
+                if (arrow) {
+                    arrow.style.transform = userDropdownMenu.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+                }
+            });
+        }
+
+        // Cerrar dropdown al hacer click fuera
+        document.addEventListener('click', function(e) {
+            if (userDropdownBtn && !userDropdownBtn.contains(e.target)) {
+                userDropdownMenu.classList.remove('show');
+                const arrow = userDropdownBtn.querySelector('.dropdown-arrow');
+                if (arrow) {
+                    arrow.style.transform = 'rotate(0deg)';
+                }
+            }
+        });
+
+        // Efecto de scroll en el header
+        let lastScrollTop = 0;
+        const header = document.querySelector('header');
+
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Cambiar opacidad del header basado en scroll
+            if (scrollTop > 50) {
+                header.style.background = 'rgba(255, 255, 255, 0.98)';
+                header.style.backdropFilter = 'blur(15px)';
+            } else {
+                header.style.background = 'rgba(255, 255, 255, 0.95)';
+                header.style.backdropFilter = 'blur(10px)';
+            }
+
+            // Ocultar/mostrar header en móviles al hacer scroll
+            if (window.innerWidth <= 768) {
+                if (scrollTop > lastScrollTop && scrollTop > 100) {
+                    // Scrolling down
+                    header.style.transform = 'translateY(-100%)';
+                } else {
+                    // Scrolling up
+                    header.style.transform = 'translateY(0)';
+                }
+            } else {
+                header.style.transform = 'translateY(0)';
+            }
+            
+            lastScrollTop = scrollTop;
+        });
+
+        // Ajustar header en cambio de orientación o resize
+        window.addEventListener('resize', function() {
+            // Cerrar menú móvil si se cambia a desktop
+            if (window.innerWidth > 768) {
+                if (hamburger) hamburger.classList.remove('active');
+                if (menu) menu.classList.remove('active');
+                document.body.style.overflow = 'auto';
+                header.style.transform = 'translateY(0)';
+            }
+        });
+
+        // Función para requerir login antes de acceder a productos
+        function requireLogin(destination) {
+            // Usar la variable global currentUser de firebase-app.js
+            if (currentUser) {
+                // Si el usuario está logueado, redirigir directamente
+                if (destination === 'cart') {
+                    toggleCart();
+                } else {
+                    window.location.href = destination;
+                }
+            } else {
+                // Si no está logueado, redirigir a la página de login con el destino
+                const loginUrl = destination === 'cart' ? '/login' : `/login?redirect=${encodeURIComponent(destination)}`;
+                window.location.href = loginUrl;
+            }
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar Firebase cuando el DOM esté listo
+            if (typeof initializeFirebase === 'function') {
+                initializeFirebase();
+            }
+            
+            // Verificar si hay parámetros de redirección en la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectAfterLogin = urlParams.get('redirect');
+            if (redirectAfterLogin) {
+                // Si hay un parámetro de redirección, significa que el usuario se autenticó exitosamente
+                // Limpiar la URL y redirigir
+                window.history.replaceState({}, document.title, window.location.pathname);
+                if (redirectAfterLogin !== 'cart') {
+                    window.location.href = decodeURIComponent(redirectAfterLogin);
+                }
+            }
+
+            // Actualizar avatar con primera letra del nombre de usuario si existe
+            const userName = document.getElementById('userName');
+            const userAvatar = document.getElementById('userAvatar');
+            if (userName && userAvatar && userName.textContent) {
+                userAvatar.textContent = userName.textContent.charAt(0).toUpperCase();
+            }
+        });
+
+        // Funciones para el carrito
+        function toggleCart() {
+            const cartSidebar = document.getElementById('cartSidebar');
+            const cartOverlay = document.getElementById('cartOverlay');
+            cartSidebar.classList.toggle('active');
+            cartOverlay.classList.toggle('active');
+        }
+
+        function closeCart() {
+            const cartSidebar = document.getElementById('cartSidebar');
+            const cartOverlay = document.getElementById('cartOverlay');
+            cartSidebar.classList.remove('active');
+            cartOverlay.classList.remove('active');
+        }
+
+        function showCheckout() {
+            alert('Función de checkout en desarrollo');
+        }
+
+        function clearCart() {
+            alert('Carrito limpiado');
+        }
+
+        // Funciones placeholder para compatibilidad
+        function showProfileModal() {
+            if (typeof showNotification === 'function') {
+                showNotification('Modal de perfil en desarrollo', 'info');
+            }
+        }
+
+        function showModal(modalId) {
+            if (typeof showNotification === 'function') {
+                showNotification('Modal ' + modalId + ' en desarrollo', 'info');
+            }
+        }
+
+        function logout() {
+            console.log('Función logout llamada');
+            // Esta función debe ser implementada según la lógica de logout existente
+        }
+    </script>
+</body>
+</html>
