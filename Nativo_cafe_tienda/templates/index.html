@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nativo Café - Tienda Online</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     
     <style>
         /* Reset y configuración base */
@@ -198,12 +199,12 @@
             background: var(--cafe);
             color: white;
             text-decoration: none;
-            border-radius: 25px;
+            border-radius: 5px;
             font-weight: 600;
             transition: all 0.3s ease;
             border: none;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 10px;
         }
 
         .btn:hover {
@@ -214,12 +215,11 @@
 
         /* Hero Section - Pantalla completa */
         .hero {
-            background: linear-gradient(135deg, rgba(139, 90, 43, 0.9), rgba(107, 142, 90, 0.8)), 
-                        url('/static/img/coffee-hero.jpg');
+            background: url('/static/img/indexnativo.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            height: 100vh;
+            height: 91vh;
             display: flex;
             align-items: center;
             color: var(--white);
@@ -248,7 +248,8 @@
         }
 
         .hero h1 {
-            font-size: 4rem;
+            font-family: 'Cinzel', serif;
+            font-size: 5rem;
             font-weight: 700;
             margin-bottom: 1.5rem;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
@@ -410,6 +411,14 @@
                 padding: 0 15px;
             }
         }
+
+        .img-size{
+            width: 500px;
+            height: 320px;
+            border-radius: 30px;
+            margin-bottom: 50px;
+            object-fit: fill;
+        }
     </style>
 </head>
 <body>
@@ -419,7 +428,7 @@
     <header>
         <nav>
             <a href="/" class="logo">
-                NATIVO
+            <img src="/static/img/aa.png" alt="Nativo Café Logo" class="logo-img">
             </a>
             
             <ul class="nav-menu">
@@ -460,10 +469,6 @@
                         </a>
                     </div>
                 </div>
-                
-                <button class="btn" id="loginButton" onclick="window.location.href='/login'">
-                    Iniciar Sesión
-                </button>
             </div>
         </nav>
     </header>
@@ -473,14 +478,13 @@
         <section class="hero">
             <div class="container">
                 <div class="hero-content">
-                    <h1>El Auténtico Sabor de Guatemala</h1>
-                    <p>Descubre la tradición cafetera guatemalteca en cada taza. Café cultivado con pasión en las montañas de Antigua Guatemala.</p>
+                        <img src="/static/img/Nativoblanco.png" class="img-size">
                     <div class="hero-buttons">
                         <button class="btn-hero btn-primary-hero" onclick="requireLogin('/productos')">
-                            ☕ Ver Productos
+                            Ver Productos
                         </button>
                         <a href="/menu" class="btn-hero btn-secondary-hero">
-                            📋 Nuestro Menú
+                            Nuestro Menú
                         </a>
                     </div>
                 </div>
